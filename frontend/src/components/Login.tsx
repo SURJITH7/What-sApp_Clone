@@ -13,8 +13,10 @@ function Login() {
         email,
         password,
       });
+      console.log("Login response:", response.data);
 
       localStorage.setItem("token", response.data.token);
+      localStorage.setItem("userId", response.data.user.id);
 
       alert("Login successful!");
 

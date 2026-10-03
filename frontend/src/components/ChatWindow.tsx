@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { getMessages } from "../services/messageService";
+import MessageInput from "./MessageInput";
+import socket from "../services/socket";
 
 interface Message {
   _id: string;
@@ -28,6 +30,25 @@ function ChatWindow({
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
+  console.log("Trying to connect Socket.IO...");
+
+  socket.connect();
+
+  socket.on("connect", () => {
+    console.log("Socket connected:", socket.id);
+  });
+
+  socket.on("connect_error", (error) => {
+    console.error("Socket connection error:", error.message);
+  });
+
+  return () => {
+    socket.off("connect");
+    socket.off("connect_error");
+  };
+}, []);
+
+  useEffect(() => {
     const fetchMessages = async () => {
       if (!conversationId) {
         return;
@@ -46,6 +67,55 @@ function ChatWindow({
 
     fetchMessages();
   }, [conversationId]);
+
+  useEffect(() => {
+  if (!conversationId) {
+    return;
+  }
+
+  socket.emit("joinRoom", conversationId);
+
+  console.log("Joined conversation room:", conversationId);
+}, [conversationId]);
+
+  useEffect(() => {
+  const handleReceiveMessage = (message: Message) => {
+    console.log("Received message:", message);
+
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      message,
+    ]);
+  };
+
+  socket.on("receiveMessage", handleReceiveMessage);
+
+  return () => {
+    socket.off("receiveMessage", handleReceiveMessage);
+  };
+}, []);
+
+
+
+    const handleSendMessage = (message: string) => {
+  if (!conversationId) {
+    return;
+  }
+
+  const userId = localStorage.getItem("userId");
+
+  if (!userId) {
+    console.error("User ID not found");
+    return;
+  }
+
+  socket.emit("sendMessage", {
+    conversationId,
+    senderId: userId,
+    receiverId: user._id,
+    message,
+  });
+};
 
   if (!user) {
     return (
@@ -72,6 +142,7 @@ function ChatWindow({
           ))
         )}
       </div>
+      <MessageInput onSend={handleSendMessage} />
     </div>
   );
 }
