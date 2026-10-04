@@ -78,7 +78,7 @@ function ChatWindow({
   console.log("Joined conversation room:", conversationId);
 }, [conversationId]);
 
-  useEffect(() => {
+ useEffect(() => {
   const handleReceiveMessage = (message: Message) => {
     console.log("Received message:", message);
 
@@ -86,6 +86,10 @@ function ChatWindow({
       ...prevMessages,
       message,
     ]);
+
+    // Tell the backend that the message was delivered
+    socket.emit("messageDelivered", message._id);
+    socket.emit("messageRead", message._id);
   };
 
   socket.on("receiveMessage", handleReceiveMessage);
@@ -136,10 +140,16 @@ function ChatWindow({
           <p>No messages yet</p>
         ) : (
           messages.map((message) => (
-            <div key={message._id}>
-              <p>{message.message}</p>
-            </div>
-          ))
+  <div key={message._id}>
+    <p>{message.message}</p>
+
+    <small>
+  {message.status === "sent" && "✓"}
+  {message.status === "delivered" && "✓✓"}
+  {message.status === "read" && "✓✓"}
+</small>
+  </div>
+))
         )}
       </div>
       <MessageInput onSend={handleSendMessage} />

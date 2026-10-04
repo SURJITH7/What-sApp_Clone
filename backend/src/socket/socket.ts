@@ -56,12 +56,66 @@ export const initializeSocket = (server: http.Server) => {
         console.log("Message saved:", newMessage._id);
 
         // Send message to other users in the room
-        socket.to(conversationId).emit("receiveMessage", newMessage);
+        io.to(conversationId).emit("receiveMessage", newMessage);
 
       } catch (error) {
         console.error("Socket message error:", error);
       }
     });
+
+    socket.on("messageDelivered", async (messageId: string) => {
+  try {
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      console.log("Message not found");
+      return;
+    }
+
+    message.status = "delivered";
+
+    await message.save();
+
+    console.log("Message marked as delivered:", messageId);
+
+    io.to(message.conversation.toString()).emit(
+      "messageStatusUpdated",
+      {
+        messageId: message._id,
+        status: message.status,
+      }
+    );
+  } catch (error) {
+    console.error("Message delivery error:", error);
+  }
+});
+
+    socket.on("messageRead", async (messageId: string) => {
+  try {
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      console.log("Message not found");
+      return;
+    }
+
+    message.status = "read";
+
+    await message.save();
+
+    console.log("Message marked as read:", messageId);
+
+    io.to(message.conversation.toString()).emit(
+      "messageStatusUpdated",
+      {
+        messageId: message._id,
+        status: message.status,
+      }
+    );
+  } catch (error) {
+    console.error("Message read error:", error);
+  }
+});
 
     socket.on("disconnect", () => {
       console.log("User disconnected:", socket.id);
