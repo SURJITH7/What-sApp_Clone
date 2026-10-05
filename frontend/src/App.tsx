@@ -173,14 +173,26 @@ function App() {
   };
 
   return (
-    <div>
-      <Sidebar onSelectUser={handleSelectUser} />
 
-      <ChatWindow
-        user={selectedUser}
-        conversationId={selectedConversationId}
-      />
+    <>
+    <div className="h-screen bg-gray-100 flex overflow-hidden">
+      {/* Sidebar */}
+      <div className="w-[350px] bg-white border-r border-gray-200">
+        <Sidebar onSelectUser={handleSelectUser} />
+      </div>
+
+      {/* Chat Window */}
+      <div className="flex-1 bg-gray-50">
+        <ChatWindow
+          user={selectedUser}
+          conversationId={selectedConversationId}
+        />
+      </div>
     </div>
+    </>
+     
+
+    
   );
 }
 

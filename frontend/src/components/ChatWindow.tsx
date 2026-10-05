@@ -5,8 +5,16 @@ import socket from "../services/socket";
 
 interface Message {
   _id: string;
-  sender: string;
-  receiver: string;
+  sender: {
+  _id: string;
+  name: string;
+  profileImage?: string;
+};
+  receiver: {
+  _id: string;
+  name: string;
+  profileImage?: string;
+};
   message: string;
   messageType: "text" | "image";
   status: "sent" | "delivered" | "read";
@@ -130,31 +138,108 @@ function ChatWindow({
   }
 
   return (
-    <div>
-      <h2>{user.name}</h2>
+  <div className="h-screen flex flex-col">
 
-      <p>{user.email}</p>
-
-      <div>
-        {messages.length === 0 ? (
-          <p>No messages yet</p>
-        ) : (
-          messages.map((message) => (
-  <div key={message._id}>
-    <p>{message.message}</p>
-
-    <small>
-  {message.status === "sent" && "✓"}
-  {message.status === "delivered" && "✓✓"}
-  {message.status === "read" && "✓✓"}
-</small>
-  </div>
-))
-        )}
+    {/* Chat Header */}
+    <div className="h-16 bg-white border-b border-gray-200 px-6 flex items-center">
+      <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold">
+        {user.name.charAt(0).toUpperCase()}
       </div>
+
+      <div className="ml-3">
+        <h2 className="font-semibold text-gray-800">
+          {user.name}
+        </h2>
+
+        <p className="text-xs text-gray-500">
+          {user.email}
+        </p>
+      </div>
+    </div>
+
+    {/* Messages */}
+    <div className="flex-1 overflow-y-auto bg-gray-100 p-6">
+
+      {messages.length === 0 ? (
+        <div className="h-full flex items-center justify-center">
+          <p className="text-gray-500">
+            No messages yet
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+
+          {messages.map((message) => {
+            const currentUserId = localStorage.getItem("userId");
+            console.log("MESSAGE SENDER:", message.sender);
+  console.log("CURRENT USER:", currentUserId);
+            const isMyMessage =
+  message.sender._id === currentUserId;
+
+            return (
+              <div
+                key={message._id}
+                className={`flex ${
+                  isMyMessage
+                    ? "justify-end"
+                    : "justify-start"
+                }`}
+              >
+                <div
+                  className={`max-w-[70%] px-4 py-2 rounded-lg shadow-sm ${
+                    isMyMessage
+                      ? "bg-green-500 text-white rounded-br-none"
+                      : "bg-white text-gray-800 rounded-bl-none"
+                  }`}
+                >
+                  <p className="text-sm">
+                    {message.message}
+                  </p>
+
+                  <div
+                    className={`flex justify-end items-center gap-1 mt-1 text-xs ${
+                      isMyMessage
+                        ? "text-green-100"
+                        : "text-gray-400"
+                    }`}
+                  >
+                    <span>
+                      {new Date(
+                        message.createdAt
+                      ).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+
+                    {isMyMessage && (
+                      <span>
+                        {message.status === "sent" && "✓"}
+
+                        {message.status === "delivered" &&
+                          "✓✓"}
+
+                        {message.status === "read" &&
+                          "✓✓"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+        </div>
+      )}
+    </div>
+
+    {/* Message Input */}
+    <div className="bg-white border-t border-gray-200 p-4">
       <MessageInput onSend={handleSendMessage} />
     </div>
-  );
+
+  </div>
+);
 }
 
 export default ChatWindow;
