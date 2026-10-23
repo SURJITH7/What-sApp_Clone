@@ -15,8 +15,8 @@ function Login() {
       });
       console.log("Login response:", response.data);
 
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("userId", response.data.user.id);
+      sessionStorage.setItem("token", response.data.token);
+      sessionStorage.setItem("userId", response.data.user.id);
 
       alert("Login successful!");
 

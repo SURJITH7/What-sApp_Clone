@@ -114,16 +114,15 @@ function ChatWindow({
     return;
   }
 
-  const userId = localStorage.getItem("userId");
-
-  if (!userId) {
+const currentUserId = sessionStorage.getItem("userId");
+  if (!currentUserId) {
     console.error("User ID not found");
     return;
   }
 
   socket.emit("sendMessage", {
     conversationId,
-    senderId: userId,
+    senderId: currentUserId,
     receiverId: user._id,
     message,
   });
@@ -213,15 +212,17 @@ function ChatWindow({
                     </span>
 
                     {isMyMessage && (
-                      <span>
-                        {message.status === "sent" && "✓"}
-
-                        {message.status === "delivered" &&
-                          "✓✓"}
-
-                        {message.status === "read" &&
-                          "✓✓"}
-                      </span>
+                        <span
+                          className={
+                            message.status === "read"
+                              ? "text-blue-500 font-bold"
+                              : "text-gray-200"
+                          }
+                          >
+                          {message.status === "sent" && "✓"}
+                          {message.status === "delivered" && "✓✓"}
+                          {message.status === "read" && "✓✓"}
+                        </span>
                     )}
                   </div>
                 </div>

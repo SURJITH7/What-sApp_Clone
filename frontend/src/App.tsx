@@ -158,7 +158,7 @@ function App() {
   const [selectedConversationId, setSelectedConversationId] =
     useState<string | null>(null);
 
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   if (!token) {
     return <Login />;
